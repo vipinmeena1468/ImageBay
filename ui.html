@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ImageBay</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          sans-serif;
+        font-size: 12px;
+        color: #111;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .toolbar {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e0e0e0;
+        flex: 0 0 auto;
+      }
+
+      .toolbar-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .title-block {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .title {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .count {
+        font-size: 11px;
+        color: #777;
+      }
+
+      .filter-wrapper {
+        position: relative;
+      }
+
+      .filter-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 4px;
+        border: 1px solid #c4c4c4;
+        background: #ffffff;
+        cursor: pointer;
+        min-width: 90px;
+        justify-content: space-between;
+      }
+
+      .filter-button-label {
+        white-space: nowrap;
+      }
+
+      .filter-caret {
+        font-size: 9px;
+      }
+
+      .filter-button:hover {
+        border-color: #999;
+        background: #f8f8f8;
+      }
+
+      .filter-button.open {
+        border-color: #111;
+        background: #ffffff;
+      }
+
+      .filter-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
+        min-width: 130px;
+        background: #111;
+        color: #fff;
+        border-radius: 4px;
+        padding: 4px 0;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+        z-index: 10;
+      }
+
+      .filter-menu.hidden {
+        display: none;
+      }
+
+      .filter-item {
+        padding: 6px 10px;
+        font-size: 11px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .filter-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .filter-item.active {
+        font-weight: 500;
+      }
+
+      .grid-wrapper {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        align-items: stretch;
+      }
+
+      .item {
+        position: relative;
+        border: 1px solid #e0e0e0;
+        background: #f5f5f5;
+        cursor: pointer;
+        overflow: hidden;
+        transition: border-color 0.15s ease-out,
+          background-color 0.15s ease-out;
+      }
+
+      .thumb {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        display: block;
+        border-radius: 0;
+        background: #f0f0f0;
+        opacity: 0;
+        transition: opacity 0.2s ease-out;
+      }
+
+      .thumb-loaded {
+        opacity: 1;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.08);
+        opacity: 0;
+        transition: opacity 0.15s ease-out;
+        pointer-events: none;
+      }
+
+      .item:hover {
+        border-color: #b5b5b5;
+        background-color: #f0f0f0;
+      }
+
+      .item:hover .overlay {
+        opacity: 1;
+      }
+
+      .status {
+        padding: 12px;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .status button {
+        margin-top: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 2px;
+        border: 1px solid #ccc;
+        background: #fafafa;
+        cursor: pointer;
+      }
+
+      .status button:hover {
+        background: #f0f0f0;
+      }
+
+      /* Footer bar */
+      .footer {
+        border-top: 1px solid #e0e0e0;
+        background: #f9f9f9;
+        text-align: center;
+        padding: 6px 0;
+        font-size: 11px;
+        color: #888;
+        flex: 0 0 auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="toolbar">
+      <div class="toolbar-main">
+        <div class="title-block">
+          <div class="title">ImageBay</div>
+          <div id="countLabel" class="count">Loading…</div>
+        </div>
+
+        <div class="filter-wrapper">
+          <button id="filterButton" class="filter-button" type="button">
+            <span id="filterLabel" class="filter-button-label">All</span>
+            <span class="filter-caret">▾</span>
+          </button>
+          <div id="filterMenu" class="filter-menu hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-wrapper">
+      <div id="grid" class="grid">
+        <div class="status">Loading images…</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      made by Vipin Meena
+    </div>
+
+    <script>
+      const API_BASE =
+        "https://api.github.com/repos/vipinmeena1468/library-assets/contents";
+      const gridEl = document.getElementById("grid");
+      const countEl = document.getElementById("countLabel");
+      const filterButton = document.getElementById("filterButton");
+      const filterLabel = document.getElementById("filterLabel");
+      const filterMenu = document.getElementById("filterMenu");
+
+      let industries = [];
+      let cache = {};
+      let currentUrls = [];
+      let currentFilter = "All";
+      let loadVersion = 0;
+
+      async function fetchJson(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Network error " + res.status);
+        return res.json();
+      }
+
+      function updateCount() {
+        const total = currentUrls.length;
+        countEl.textContent = total ? `${total} images` : "No images";
+      }
+
+      function buildFilterMenu() {
+        const options = ["All", ...industries];
+        filterMenu.innerHTML = options
+          .map(
+            (name) =>
+              `<div class="filter-item${
+                name === currentFilter ? " active" : ""
+              }" data-value="${name}">${name}</div>`
+          )
+          .join("");
+      }
+
+      function setFilterLabel(name) {
+        filterLabel.textContent = name;
+      }
+
+      function toggleMenu(show) {
+        const willShow =
+          typeof show === "boolean"
+            ? show
+            : filterMenu.classList.contains("hidden");
+        if (willShow) {
+          filterMenu.classList.remove("hidden");
+          filterButton.classList.add("open");
+        } else {
+          filterMenu.classList.add("hidden");
+          filterButton.classList.remove("open");
+        }
+      }
+
+      async function loadIndustries() {
+        try {
+          const rootData = await fetchJson(API_BASE);
+          industries = rootData
+            .filter((item) => item.type === "dir")
+            .map((item) => item.name)
+            .sort();
+
+          buildFilterMenu();
+          setFilterLabel("All");
+          currentFilter = "All";
+          loadImages("All");
+        } catch (err) {
+          gridEl.innerHTML =
+            '<div class="status">Could not load folders from GitHub.</div>';
+          countEl.textContent = "Error loading folders";
+        }
+      }
+
+      async function loadImages(filter) {
+        const myVersion = ++loadVersion;
+        currentFilter = filter;
+        setFilterLabel(filter);
+        gridEl.innerHTML = '<div class="status">Loading images…</div>';
+        currentUrls = [];
+        countEl.textContent = "Loading…";
+
+        if (cache[filter]) {
+          currentUrls = cache[filter].slice();
+          renderAll(myVersion);
+          return;
+        }
+
+        try {
+          let urls = [];
+          if (filter === "All") {
+            const folderPromises = industries.map(async (industry) => {
+              try {
+                const data = await fetchJson(
+                  `${API_BASE}/${encodeURIComponent(industry)}`
+                );
+                return data
+                  .filter((item) => item.download_url)
+                  .map((item) => item.download_url);
+              } catch {
+                return [];
+              }
+            });
+
+            const results = await Promise.all(folderPromises);
+            urls = results.flat();
+            for (let i = urls.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [urls[i], urls[j]] = [urls[j], urls[i]];
+            }
+          } else {
+            const data = await fetchJson(
+              `${API_BASE}/${encodeURIComponent(filter)}`
+            );
+            urls = data
+              .filter((item) => item.download_url)
+              .map((item) => item.download_url);
+          }
+
+          if (myVersion !== loadVersion) return;
+
+          currentUrls = urls;
+          cache[filter] = urls.slice();
+          renderAll(myVersion);
+        } catch {
+          gridEl.innerHTML =
+            '<div class="status">Could not load images. <button id="retryBtn">Retry</button></div>';
+          countEl.textContent = "Error loading images";
+          document.getElementById("retryBtn").onclick = () => loadImages(filter);
+        }
+      }
+
+      function renderAll(versionCheck) {
+        if (versionCheck !== loadVersion) return;
+
+        if (!currentUrls.length) {
+          gridEl.innerHTML =
+            '<div class="status">No images found for this filter.</div>';
+          updateCount();
+          return;
+        }
+
+        gridEl.innerHTML = "";
+        currentUrls.forEach((url) => {
+          const item = document.createElement("div");
+          item.className = "item";
+
+          const img = document.createElement("img");
+          img.className = "thumb";
+          img.src = url;
+          img.loading = "lazy";
+          img.onload = () => img.classList.add("thumb-loaded");
+          img.onerror = () => (img.style.opacity = "0.4");
+          img.onclick = () =>
+            parent.postMessage(
+              { pluginMessage: { type: "place-image", url } },
+              "*"
+            );
+
+          const overlay = document.createElement("div");
+          overlay.className = "overlay";
+
+          item.appendChild(img);
+          item.appendChild(overlay);
+          gridEl.appendChild(item);
+        });
+
+        updateCount();
+      }
+
+      filterButton.onclick = (e) => {
+        e.stopPropagation();
+        toggleMenu();
+      };
+      filterMenu.onclick = (e) => {
+        const item = e.target.closest(".filter-item");
+        if (!item) return;
+        const value = item.dataset.value;
+        toggleMenu(false);
+        if (value && value !== currentFilter) loadImages(value);
+      };
+      document.addEventListener("mousedown", (e) => {
+        if (
+          !filterMenu.contains(e.target) &&
+          !filterButton.contains(e.target)
+        )
+          toggleMenu(false);
+      });
+
+      loadIndustries();
+    </script>
+  </body>
+</html>
