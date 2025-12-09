@@ -6,7 +6,7 @@ Made by **Vipin Meena**.
 
 ## ⚙️ Features  
 - Browse categorized product images (e.g. Furniture, Kitchen, Bath, etc.)  
-- Randomized “All” view for broader inspiration  
+- Randomized “All” view for broader inspiration (Removed as of now due to performance issue)
 - One-click image placement on the Figma canvas or into selected frames  
 - Lazy loading for smooth scrolling  
 - Preserves original image dimensions and quality  
