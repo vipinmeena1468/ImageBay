@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>ImageBay</title>
@@ -8,36 +8,40 @@
         box-sizing: border-box;
       }
 
-      html,
       body {
         margin: 0;
         padding: 0;
-        height: 100%;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
           sans-serif;
         font-size: 12px;
-        color: #111;
+        color: #111827;
+        background: #ffffff;
       }
 
-      body {
+      .app {
+        height: 100vh;
+        max-height: 640px;
         display: flex;
         flex-direction: column;
+        background: #ffffff;
       }
 
-      .toolbar {
-        padding: 8px 12px;
-        border-bottom: 1px solid #e0e0e0;
-        flex: 0 0 auto;
-      }
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
 
-      .toolbar-main {
+        padding: 8px 14px;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        background: #ffffff;
+        z-index: 60;
       }
 
-      .title-block {
+      .top-left {
         display: flex;
         flex-direction: column;
         gap: 2px;
@@ -50,11 +54,14 @@
 
       .count {
         font-size: 11px;
-        color: #777;
+        color: #6b7280;
       }
 
-      .filter-wrapper {
+      .top-right {
         position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
       }
 
       .filter-button {
@@ -62,373 +69,504 @@
         align-items: center;
         gap: 4px;
         padding: 4px 8px;
-        font-size: 11px;
-        border-radius: 4px;
-        border: 1px solid #c4c4c4;
-        background: #ffffff;
+        font-size: 10px;
+        border-radius: 2px;
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
         cursor: pointer;
-        min-width: 90px;
+        user-select: none;
+        width: 100px;
         justify-content: space-between;
-      }
-
-      .filter-button-label {
-        white-space: nowrap;
-      }
-
-      .filter-caret {
-        font-size: 9px;
+        transition: background 0.15s ease, border-color 0.15s ease;
       }
 
       .filter-button:hover {
-        border-color: #999;
-        background: #f8f8f8;
+        background: #f3f4f6;
+        border-color: #cbd5e1;
       }
 
-      .filter-button.open {
-        border-color: #111;
-        background: #ffffff;
+      .filter-button-label {
+        flex: 1;
+        line-height: 1;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .filter-button-caret {
+        font-size: 9px;
+        line-height: 1;
+        color: #4b5563;
+        flex-shrink: 0;
       }
 
       .filter-menu {
         position: absolute;
-        right: 0;
         top: calc(100% + 4px);
-        min-width: 130px;
-        background: #111;
-        color: #fff;
-        border-radius: 4px;
-        padding: 4px 0;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
-        z-index: 10;
-      }
-
-      .filter-menu.hidden {
+        right: 0;
+        min-width: 100px;
+        max-height: none;
+        overflow-y: visible;
+        background: #111827;
+        color: #f9fafb;
+        padding: 0px 0;
+        border-radius: 2px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
+        z-index: 20;
         display: none;
       }
 
-      .filter-item {
-        padding: 6px 10px;
-        font-size: 11px;
+      .filter-menu-item {
+        padding: 5px 10px;
+        font-size: 10px;
         cursor: pointer;
         white-space: nowrap;
       }
 
-      .filter-item:hover {
-        background: rgba(255, 255, 255, 0.08);
+      .filter-menu-item:hover {
+        background: #1f2937;
       }
 
-      .filter-item.active {
-        font-weight: 500;
+      .filter-menu-item.active {
+        background: #2563eb;
       }
 
-      .grid-wrapper {
-        flex: 1 1 auto;
-        overflow-y: auto;
-        padding: 8px;
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #f3f4f6;
+        margin-top: 48px;
+        margin-bottom: 26px;
+      }
+
+      .grid-scroll {
+        flex: 1;
+        overflow: auto;
+        padding: 12px 14px 40px;
       }
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        align-items: stretch;
-      }
-
-      .item {
-        position: relative;
-        border: 1px solid #e0e0e0;
-        background: #f5f5f5;
-        cursor: pointer;
-        overflow: hidden;
-        transition: border-color 0.15s ease-out,
-          background-color 0.15s ease-out;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
       }
 
       .thumb {
-        width: 100%;
-        height: 140px;
-        object-fit: cover;
-        display: block;
-        border-radius: 0;
-        background: #f0f0f0;
-        opacity: 0;
-        transition: opacity 0.2s ease-out;
-      }
-
-      .thumb-loaded {
-        opacity: 1;
-      }
-
-      .overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.08);
-        opacity: 0;
-        transition: opacity 0.15s ease-out;
-        pointer-events: none;
-      }
-
-      .item:hover {
-        border-color: #b5b5b5;
-        background-color: #f0f0f0;
-      }
-
-      .item:hover .overlay {
-        opacity: 1;
-      }
-
-      .status {
-        padding: 12px;
-        font-size: 12px;
-        color: #666;
-      }
-
-      .status button {
-        margin-top: 6px;
-        padding: 4px 8px;
-        font-size: 11px;
-        border-radius: 2px;
-        border: 1px solid #ccc;
-        background: #fafafa;
+        position: relative;
+        background: #e5e7eb;
         cursor: pointer;
+        overflow: hidden;
+        aspect-ratio: 4 / 3;
       }
 
-      .status button:hover {
-        background: #f0f0f0;
+      .thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
-      /* Footer bar */
-      .footer {
-        border-top: 1px solid #e0e0e0;
-        background: #f9f9f9;
+      .thumb::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0);
+        transition: background 0.15s ease-out;
+      }
+
+      .thumb:hover::after {
+        background: rgba(15, 23, 42, 0.06);
+      }
+
+      .empty-state {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        font-size: 12px;
+        color: #9ca3af;
         text-align: center;
-        padding: 6px 0;
-        font-size: 11px;
-        color: #888;
-        flex: 0 0 auto;
+      }
+
+      .loader {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        border: 2px solid #d1d5db;
+        border-top-color: #111827;
+        animation: spin 0.6s linear infinite;
+        margin-right: 6px;
+      }
+
+      .shimmer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
+        width: 100%;
+      }
+
+      .shimmer-tile {
+        aspect-ratio: 4 / 3;
+        border-radius: 2px;
+        background: linear-gradient(
+          90deg,
+          #e5e7eb 0%,
+          #f3f4f6 50%,
+          #e5e7eb 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1s linear infinite;
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 6px 14px 7px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 10px;
+        color: #9ca3af;
+        text-align: right;
+        background: #ffffff;
+        z-index: 50;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 0% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
       }
     </style>
   </head>
-
   <body>
-    <div class="toolbar">
-      <div class="toolbar-main">
-        <div class="title-block">
+    <div class="app">
+      <div class="top-bar">
+        <div class="top-left">
           <div class="title">ImageBay</div>
-          <div id="countLabel" class="count">Loading…</div>
+          <div id="countLabel" class="count"></div>
         </div>
-
-        <div class="filter-wrapper">
+        <div class="top-right">
           <button id="filterButton" class="filter-button" type="button">
-            <span id="filterLabel" class="filter-button-label">All</span>
-            <span class="filter-caret">▾</span>
+            <span id="filterButtonLabel" class="filter-button-label"></span>
+            <span class="filter-button-caret">▾</span>
           </button>
-          <div id="filterMenu" class="filter-menu hidden"></div>
+          <div id="filterMenu" class="filter-menu"></div>
         </div>
       </div>
-    </div>
 
-    <div class="grid-wrapper">
-      <div id="grid" class="grid">
-        <div class="status">Loading images…</div>
+      <div class="content">
+        <div id="gridScroll" class="grid-scroll">
+          <div id="emptyState" class="empty-state">
+            <span><span class="loader"></span>Loading images</span>
+          </div>
+          <div id="grid" class="grid" style="display: none"></div>
+        </div>
       </div>
-    </div>
 
-    <div class="footer">
-      made by Vipin Meena
+      <div class="footer">made by Vipin Meena</div>
     </div>
 
     <script>
-      const API_BASE =
-        "https://api.github.com/repos/vipinmeena1468/library-assets/contents";
+      const INDEX_URL =
+        "https://raw.githubusercontent.com/vipinmeena1468/library-assets/main/index.json";
+
+      const IMAGE_BASE_URL =
+        "https://raw.githubusercontent.com/vipinmeena1468/library-assets/main/";
+
+      const PRELOAD_LIMIT_PER_CATEGORY = 4;
+
+      let indexData = null;
+      let activeCategoryId = null;
+      let menuOpen = false;
+      const preloadedThumbs = new Set();
+      let thumbObserver = null;
+
+      const countLabelEl = document.getElementById("countLabel");
+      const emptyStateEl = document.getElementById("emptyState");
       const gridEl = document.getElementById("grid");
-      const countEl = document.getElementById("countLabel");
+      const gridScrollEl = document.getElementById("gridScroll");
       const filterButton = document.getElementById("filterButton");
-      const filterLabel = document.getElementById("filterLabel");
+      const filterButtonLabel = document.getElementById("filterButtonLabel");
       const filterMenu = document.getElementById("filterMenu");
 
-      let industries = [];
-      let cache = {};
-      let currentUrls = [];
-      let currentFilter = "All";
-      let loadVersion = 0;
+      function setLoading(isLoading) {
+        if (isLoading) {
+          const shimmerCount = 12;
+          const tiles = Array.from({ length: shimmerCount })
+            .map(() => '<div class="shimmer-tile"></div>')
+            .join("");
 
-      async function fetchJson(url) {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Network error " + res.status);
-        return res.json();
+          emptyStateEl.style.display = "block";
+          emptyStateEl.innerHTML =
+            '<div class="shimmer-grid">' + tiles + "</div>";
+          gridEl.style.display = "none";
+        } else {
+          emptyStateEl.style.display = "none";
+        }
       }
 
-      function updateCount() {
-        const total = currentUrls.length;
-        countEl.textContent = total ? `${total} images` : "No images";
+      async function fetchIndex() {
+        setLoading(true);
+        try {
+          const res = await fetch(INDEX_URL);
+          if (!res.ok) {
+            throw new Error("Network error " + res.status);
+          }
+          indexData = await res.json();
+          buildFilterMenu();
+
+          const firstCat =
+            indexData &&
+            Array.isArray(indexData.categories) &&
+            indexData.categories[0]
+              ? indexData.categories[0].id
+              : null;
+
+          if (firstCat) {
+            setCategory(firstCat);
+          } else {
+            emptyStateEl.style.display = "flex";
+            emptyStateEl.textContent = "No categories found.";
+            gridEl.style.display = "none";
+          }
+
+          setTimeout(preloadOtherCategories, 50);
+        } catch (err) {
+          console.error(err);
+          emptyStateEl.style.display = "flex";
+          emptyStateEl.textContent =
+            "Could not load index file. Check connection or try again.";
+          gridEl.style.display = "none";
+        } finally {
+          setLoading(false);
+        }
       }
 
       function buildFilterMenu() {
-        const options = ["All", ...industries];
-        filterMenu.innerHTML = options
-          .map(
-            (name) =>
-              `<div class="filter-item${
-                name === currentFilter ? " active" : ""
-              }" data-value="${name}">${name}</div>`
-          )
-          .join("");
-      }
+        filterMenu.innerHTML = "";
 
-      function setFilterLabel(name) {
-        filterLabel.textContent = name;
-      }
-
-      function toggleMenu(show) {
-        const willShow =
-          typeof show === "boolean"
-            ? show
-            : filterMenu.classList.contains("hidden");
-        if (willShow) {
-          filterMenu.classList.remove("hidden");
-          filterButton.classList.add("open");
-        } else {
-          filterMenu.classList.add("hidden");
-          filterButton.classList.remove("open");
-        }
-      }
-
-      async function loadIndustries() {
-        try {
-          const rootData = await fetchJson(API_BASE);
-          industries = rootData
-            .filter((item) => item.type === "dir")
-            .map((item) => item.name)
-            .sort();
-
-          buildFilterMenu();
-          setFilterLabel("All");
-          currentFilter = "All";
-          loadImages("All");
-        } catch (err) {
-          gridEl.innerHTML =
-            '<div class="status">Could not load folders from GitHub.</div>';
-          countEl.textContent = "Error loading folders";
-        }
-      }
-
-      async function loadImages(filter) {
-        const myVersion = ++loadVersion;
-        currentFilter = filter;
-        setFilterLabel(filter);
-        gridEl.innerHTML = '<div class="status">Loading images…</div>';
-        currentUrls = [];
-        countEl.textContent = "Loading…";
-
-        if (cache[filter]) {
-          currentUrls = cache[filter].slice();
-          renderAll(myVersion);
+        if (!indexData || !Array.isArray(indexData.categories)) {
+          filterButtonLabel.textContent = "No categories";
           return;
         }
 
-        try {
-          let urls = [];
-          if (filter === "All") {
-            const folderPromises = industries.map(async (industry) => {
-              try {
-                const data = await fetchJson(
-                  `${API_BASE}/${encodeURIComponent(industry)}`
-                );
-                return data
-                  .filter((item) => item.download_url)
-                  .map((item) => item.download_url);
-              } catch {
-                return [];
-              }
-            });
-
-            const results = await Promise.all(folderPromises);
-            urls = results.flat();
-            for (let i = urls.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [urls[i], urls[j]] = [urls[j], urls[i]];
-            }
-          } else {
-            const data = await fetchJson(
-              `${API_BASE}/${encodeURIComponent(filter)}`
-            );
-            urls = data
-              .filter((item) => item.download_url)
-              .map((item) => item.download_url);
-          }
-
-          if (myVersion !== loadVersion) return;
-
-          currentUrls = urls;
-          cache[filter] = urls.slice();
-          renderAll(myVersion);
-        } catch {
-          gridEl.innerHTML =
-            '<div class="status">Could not load images. <button id="retryBtn">Retry</button></div>';
-          countEl.textContent = "Error loading images";
-          document.getElementById("retryBtn").onclick = () => loadImages(filter);
-        }
-      }
-
-      function renderAll(versionCheck) {
-        if (versionCheck !== loadVersion) return;
-
-        if (!currentUrls.length) {
-          gridEl.innerHTML =
-            '<div class="status">No images found for this filter.</div>';
-          updateCount();
-          return;
-        }
-
-        gridEl.innerHTML = "";
-        currentUrls.forEach((url) => {
+        indexData.categories.forEach((cat) => {
           const item = document.createElement("div");
-          item.className = "item";
-
-          const img = document.createElement("img");
-          img.className = "thumb";
-          img.src = url;
-          img.loading = "lazy";
-          img.onload = () => img.classList.add("thumb-loaded");
-          img.onerror = () => (img.style.opacity = "0.4");
-          img.onclick = () =>
-            parent.postMessage(
-              { pluginMessage: { type: "place-image", url } },
-              "*"
-            );
-
-          const overlay = document.createElement("div");
-          overlay.className = "overlay";
-
-          item.appendChild(img);
-          item.appendChild(overlay);
-          gridEl.appendChild(item);
+          item.className = "filter-menu-item";
+          item.dataset.id = cat.id;
+          item.textContent = cat.name || cat.id;
+          item.addEventListener("click", () => {
+            setCategory(cat.id);
+            closeMenu();
+          });
+          filterMenu.appendChild(item);
         });
 
-        updateCount();
+        updateMenuActiveState();
       }
 
-      filterButton.onclick = (e) => {
-        e.stopPropagation();
-        toggleMenu();
-      };
-      filterMenu.onclick = (e) => {
-        const item = e.target.closest(".filter-item");
-        if (!item) return;
-        const value = item.dataset.value;
-        toggleMenu(false);
-        if (value && value !== currentFilter) loadImages(value);
-      };
-      document.addEventListener("mousedown", (e) => {
-        if (
-          !filterMenu.contains(e.target) &&
-          !filterButton.contains(e.target)
-        )
-          toggleMenu(false);
+      function setCategory(id) {
+        activeCategoryId = id;
+        filterButtonLabel.textContent = getCategoryName(id);
+        updateMenuActiveState();
+        updateMetaLabel();
+
+        setLoading(true);
+        setTimeout(() => {
+          renderGrid();
+        }, 60);
+
+        setTimeout(preloadOtherCategories, 120);
+      }
+
+      function getCategoryName(id) {
+        if (!indexData || !Array.isArray(indexData.categories)) return id;
+        const cat = indexData.categories.find((c) => c.id === id);
+        return (cat && (cat.name || cat.id)) || id;
+      }
+
+      function updateMenuActiveState() {
+        const items = filterMenu.querySelectorAll(".filter-menu-item");
+        items.forEach((item) => {
+          if (item.dataset.id === activeCategoryId) {
+            item.classList.add("active");
+          } else {
+            item.classList.remove("active");
+          }
+        });
+      }
+
+      function updateMetaLabel() {
+        if (!indexData || !Array.isArray(indexData.categories)) {
+          countLabelEl.textContent = "";
+          return;
+        }
+        const cat = indexData.categories.find((c) => c.id === activeCategoryId);
+        const count = cat && Array.isArray(cat.images) ? cat.images.length : 0;
+        countLabelEl.textContent = count + " images";
+      }
+
+      function getImagesForActiveCategory() {
+        if (!indexData || !Array.isArray(indexData.categories)) return [];
+        const cat = indexData.categories.find((c) => c.id === activeCategoryId);
+        if (!cat || !Array.isArray(cat.images)) return [];
+        return cat.images.map((img) => ({
+          categoryId: cat.id,
+          categoryName: cat.name || cat.id,
+          path: img.path,
+          fileName: img.fileName || img.path,
+        }));
+      }
+
+      function ensureThumbObserver() {
+        if (thumbObserver || typeof IntersectionObserver === "undefined") {
+          return;
+        }
+
+        thumbObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const img = entry.target;
+              const src = img.dataset.src;
+              if (!src) return;
+              img.src = src;
+              thumbObserver.unobserve(img);
+            });
+          },
+          {
+            root: gridScrollEl,
+            rootMargin: "200px 0px",
+            threshold: 0.1,
+          }
+        );
+      }
+
+      function renderGrid() {
+        const items = getImagesForActiveCategory();
+        gridEl.innerHTML = "";
+
+        if (!items || items.length === 0) {
+          emptyStateEl.style.display = "flex";
+          emptyStateEl.textContent = "No images for this category.";
+          gridEl.style.display = "none";
+          return;
+        }
+
+        emptyStateEl.style.display = "none";
+        gridEl.style.display = "grid";
+
+        ensureThumbObserver();
+
+        items.forEach((img) => {
+          const url = IMAGE_BASE_URL + encodeURI(img.path);
+
+          const cell = document.createElement("div");
+          cell.className = "thumb";
+
+          const imageEl = document.createElement("img");
+          imageEl.loading = "lazy";
+          imageEl.alt = img.fileName;
+          imageEl.dataset.src = url;
+
+          if (thumbObserver) {
+            thumbObserver.observe(imageEl);
+          } else {
+            imageEl.src = url;
+          }
+
+          cell.appendChild(imageEl);
+
+          cell.addEventListener("click", () => {
+            insertImage(url, img.fileName);
+          });
+
+          gridEl.appendChild(cell);
+        });
+
+        gridScrollEl.scrollTop = 0;
+      }
+
+      function insertImage(url, name) {
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "insert-image",
+              url,
+            },
+          },
+          "*"
+        );
+      }
+
+      function preloadOtherCategories() {
+        if (!indexData || !Array.isArray(indexData.categories)) return;
+
+        indexData.categories.forEach((cat) => {
+          if (cat.id === activeCategoryId) return;
+          if (!Array.isArray(cat.images)) return;
+
+          cat.images.slice(0, PRELOAD_LIMIT_PER_CATEGORY).forEach((img) => {
+            const url = IMAGE_BASE_URL + encodeURI(img.path);
+            if (preloadedThumbs.has(url)) return;
+            preloadedThumbs.add(url);
+            const image = new Image();
+            image.src = url;
+          });
+        });
+      }
+
+      function openMenu() {
+        filterMenu.style.display = "block";
+        menuOpen = true;
+      }
+
+      function closeMenu() {
+        filterMenu.style.display = "none";
+        menuOpen = false;
+      }
+
+      filterButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (menuOpen) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
       });
 
-      loadIndustries();
+      document.addEventListener("click", () => {
+        if (menuOpen) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && menuOpen) {
+          closeMenu();
+        }
+      });
+
+      window.onmessage = () => {};
+
+      fetchIndex();
     </script>
   </body>
 </html>
