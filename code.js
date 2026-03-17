@@ -105,6 +105,7 @@ async function createNewImageNode(image) {
   const { width, height } = await image.getSizeAsync();
 
   const node = figma.createRectangle();
+  node.name = "Image";
   node.resize(width, height);
   node.fills = [
     {
