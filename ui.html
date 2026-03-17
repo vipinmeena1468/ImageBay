@@ -26,12 +26,13 @@
         background: #ffffff;
       }
 
+      /* ── Top bar ────────────────────────────────────────── */
+
       .top-bar {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
-
         padding: 8px 14px;
         border-bottom: 1px solid #e5e7eb;
         display: flex;
@@ -64,6 +65,8 @@
         justify-content: flex-end;
       }
 
+      /* ── Filter button ──────────────────────────────────── */
+
       .filter-button {
         display: inline-flex;
         align-items: center;
@@ -75,7 +78,7 @@
         background: #f9fafb;
         cursor: pointer;
         user-select: none;
-        width: 100px;
+        width: 110px;
         justify-content: space-between;
         transition: background 0.15s ease, border-color 0.15s ease;
       }
@@ -101,24 +104,25 @@
         flex-shrink: 0;
       }
 
+      /* ── Filter menu ────────────────────────────────────── */
+
       .filter-menu {
         position: absolute;
         top: calc(100% + 4px);
         right: 0;
-        min-width: 100px;
-        max-height: none;
-        overflow-y: visible;
+        min-width: 110px;
+        max-height: 280px;
+        overflow-y: auto;
         background: #111827;
         color: #f9fafb;
-        padding: 0px 0;
         border-radius: 2px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
-        z-index: 20;
+        z-index: 100;
         display: none;
       }
 
       .filter-menu-item {
-        padding: 5px 10px;
+        padding: 6px 10px;
         font-size: 10px;
         cursor: pointer;
         white-space: nowrap;
@@ -131,6 +135,14 @@
       .filter-menu-item.active {
         background: #2563eb;
       }
+
+      .filter-menu-divider {
+        height: 1px;
+        background: #1f2937;
+        margin: 2px 0;
+      }
+
+      /* ── Content + grid ─────────────────────────────────── */
 
       .content {
         flex: 1;
@@ -149,9 +161,11 @@
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
       }
+
+      /* ── Thumbnail tile ─────────────────────────────────── */
 
       .thumb {
         position: relative;
@@ -159,6 +173,7 @@
         cursor: pointer;
         overflow: hidden;
         aspect-ratio: 4 / 3;
+        border-radius: 2px;
       }
 
       .thumb img {
@@ -166,22 +181,79 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: opacity 0.2s ease;
       }
 
+      /* Hover darkening via pseudo-element */
       .thumb::after {
         content: "";
         position: absolute;
-        left: 0;
-        top: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         background: rgba(15, 23, 42, 0);
         transition: background 0.15s ease-out;
+        pointer-events: none;
       }
 
       .thumb:hover::after {
         background: rgba(15, 23, 42, 0.06);
       }
+
+      /* ── Insert state overlay ───────────────────────────── */
+
+      .thumb-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s ease;
+        z-index: 2;
+      }
+
+      .thumb.inserting .thumb-overlay {
+        opacity: 1;
+        background: rgba(15, 23, 42, 0.5);
+      }
+
+      .thumb.insert-success .thumb-overlay {
+        opacity: 1;
+        background: rgba(0, 160, 60, 0.45);
+      }
+
+      .thumb.insert-error .thumb-overlay {
+        opacity: 1;
+        background: rgba(200, 20, 50, 0.45);
+      }
+
+      .thumb-spinner {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #ffffff;
+        animation: spin 0.6s linear infinite;
+        display: none;
+      }
+
+      .thumb.inserting .thumb-spinner {
+        display: block;
+      }
+
+      .thumb-status {
+        font-size: 16px;
+        color: #ffffff;
+        line-height: 1;
+        display: none;
+      }
+
+      .thumb.insert-success .thumb-status,
+      .thumb.insert-error .thumb-status {
+        display: block;
+      }
+
+      /* ── Empty / loading states ─────────────────────────── */
 
       .empty-state {
         flex: 1;
@@ -194,21 +266,10 @@
         text-align: center;
       }
 
-      .loader {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 999px;
-        border: 2px solid #d1d5db;
-        border-top-color: #111827;
-        animation: spin 0.6s linear infinite;
-        margin-right: 6px;
-      }
-
       .shimmer-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
         width: 100%;
       }
 
@@ -225,6 +286,8 @@
         animation: shimmer 1s linear infinite;
       }
 
+      /* ── Footer ─────────────────────────────────────────── */
+
       .footer {
         position: fixed;
         bottom: 0;
@@ -238,6 +301,8 @@
         background: #ffffff;
         z-index: 50;
       }
+
+      /* ── Animations ─────────────────────────────────────── */
 
       @keyframes spin {
         to {
@@ -274,7 +339,7 @@
       <div class="content">
         <div id="gridScroll" class="grid-scroll">
           <div id="emptyState" class="empty-state">
-            <span><span class="loader"></span>Loading images</span>
+            <span>Loading…</span>
           </div>
           <div id="grid" class="grid" style="display: none"></div>
         </div>
@@ -290,13 +355,17 @@
       const IMAGE_BASE_URL =
         "https://raw.githubusercontent.com/vipinmeena1468/library-assets/main/";
 
-      const PRELOAD_LIMIT_PER_CATEGORY = 4;
+      const ALL_CATEGORY_ID = "__all__";
+
+      // ── State ─────────────────────────────────────────────
 
       let indexData = null;
       let activeCategoryId = null;
       let menuOpen = false;
-      const preloadedThumbs = new Set();
       let thumbObserver = null;
+      let activeTile = null; // the tile currently being inserted
+
+      // ── DOM refs ──────────────────────────────────────────
 
       const countLabelEl = document.getElementById("countLabel");
       const emptyStateEl = document.getElementById("emptyState");
@@ -306,67 +375,80 @@
       const filterButtonLabel = document.getElementById("filterButtonLabel");
       const filterMenu = document.getElementById("filterMenu");
 
-      function setLoading(isLoading) {
-        if (isLoading) {
-          const shimmerCount = 12;
-          const tiles = Array.from({ length: shimmerCount })
-            .map(() => '<div class="shimmer-tile"></div>')
-            .join("");
+      // ── Loading shimmer ───────────────────────────────────
 
-          emptyStateEl.style.display = "block";
-          emptyStateEl.innerHTML =
-            '<div class="shimmer-grid">' + tiles + "</div>";
-          gridEl.style.display = "none";
-        } else {
-          emptyStateEl.style.display = "none";
-        }
+      function showShimmer() {
+        const tiles = Array.from({ length: 12 })
+          .map(() => '<div class="shimmer-tile"></div>')
+          .join("");
+        emptyStateEl.innerHTML = '<div class="shimmer-grid">' + tiles + "</div>";
+        emptyStateEl.style.display = "block";
+        gridEl.style.display = "none";
       }
 
+      function hideShimmer() {
+        emptyStateEl.style.display = "none";
+      }
+
+      // ── Index fetch ───────────────────────────────────────
+
       async function fetchIndex() {
-        setLoading(true);
+        showShimmer();
         try {
           const res = await fetch(INDEX_URL);
-          if (!res.ok) {
-            throw new Error("Network error " + res.status);
-          }
+          if (!res.ok) throw new Error("HTTP " + res.status);
           indexData = await res.json();
           buildFilterMenu();
 
           const firstCat =
-            indexData &&
-            Array.isArray(indexData.categories) &&
-            indexData.categories[0]
+            indexData?.categories?.length > 0
               ? indexData.categories[0].id
               : null;
 
           if (firstCat) {
-            setCategory(firstCat);
+            setCategory(ALL_CATEGORY_ID);
           } else {
-            emptyStateEl.style.display = "flex";
-            emptyStateEl.textContent = "No categories found.";
-            gridEl.style.display = "none";
+            showError("No categories found.");
           }
-
-          setTimeout(preloadOtherCategories, 50);
         } catch (err) {
           console.error(err);
-          emptyStateEl.style.display = "flex";
-          emptyStateEl.textContent =
-            "Could not load index file. Check connection or try again.";
-          gridEl.style.display = "none";
-        } finally {
-          setLoading(false);
+          showError("Could not load images. Check your connection.");
         }
       }
 
+      function showError(msg) {
+        emptyStateEl.style.display = "flex";
+        emptyStateEl.innerHTML = msg;
+        gridEl.style.display = "none";
+      }
+
+      // ── Filter menu ───────────────────────────────────────
+
       function buildFilterMenu() {
         filterMenu.innerHTML = "";
+        if (!indexData?.categories) return;
 
-        if (!indexData || !Array.isArray(indexData.categories)) {
-          filterButtonLabel.textContent = "No categories";
-          return;
-        }
+        // "All" entry at the top
+        const totalImages = indexData.categories.reduce(
+          (sum, cat) => sum + (cat.images?.length ?? 0),
+          0
+        );
+        const allItem = document.createElement("div");
+        allItem.className = "filter-menu-item";
+        allItem.dataset.id = ALL_CATEGORY_ID;
+        allItem.textContent = `All (${totalImages})`;
+        allItem.addEventListener("click", () => {
+          setCategory(ALL_CATEGORY_ID);
+          closeMenu();
+        });
+        filterMenu.appendChild(allItem);
 
+        // Divider
+        const divider = document.createElement("div");
+        divider.className = "filter-menu-divider";
+        filterMenu.appendChild(divider);
+
+        // Individual categories
         indexData.categories.forEach((cat) => {
           const item = document.createElement("div");
           item.className = "filter-menu-item";
@@ -384,61 +466,74 @@
 
       function setCategory(id) {
         activeCategoryId = id;
-        filterButtonLabel.textContent = getCategoryName(id);
+
+        if (id === ALL_CATEGORY_ID) {
+          filterButtonLabel.textContent = "All";
+        } else {
+          filterButtonLabel.textContent = getCategoryName(id);
+        }
+
         updateMenuActiveState();
-        updateMetaLabel();
-
-        setLoading(true);
-        setTimeout(() => {
-          renderGrid();
-        }, 60);
-
-        setTimeout(preloadOtherCategories, 120);
+        updateCountLabel();
+        renderGrid();
       }
 
       function getCategoryName(id) {
-        if (!indexData || !Array.isArray(indexData.categories)) return id;
+        if (!indexData?.categories) return id;
         const cat = indexData.categories.find((c) => c.id === id);
         return (cat && (cat.name || cat.id)) || id;
       }
 
       function updateMenuActiveState() {
-        const items = filterMenu.querySelectorAll(".filter-menu-item");
-        items.forEach((item) => {
-          if (item.dataset.id === activeCategoryId) {
-            item.classList.add("active");
-          } else {
-            item.classList.remove("active");
-          }
+        filterMenu.querySelectorAll(".filter-menu-item").forEach((item) => {
+          item.classList.toggle("active", item.dataset.id === activeCategoryId);
         });
       }
 
-      function updateMetaLabel() {
-        if (!indexData || !Array.isArray(indexData.categories)) {
-          countLabelEl.textContent = "";
-          return;
-        }
-        const cat = indexData.categories.find((c) => c.id === activeCategoryId);
-        const count = cat && Array.isArray(cat.images) ? cat.images.length : 0;
-        countLabelEl.textContent = count + " images";
+      function updateCountLabel() {
+        const images = getImagesForActiveCategory();
+        countLabelEl.textContent = images.length + " images";
       }
 
+      // ── Image data helpers ────────────────────────────────
+
       function getImagesForActiveCategory() {
-        if (!indexData || !Array.isArray(indexData.categories)) return [];
-        const cat = indexData.categories.find((c) => c.id === activeCategoryId);
-        if (!cat || !Array.isArray(cat.images)) return [];
+        if (!indexData?.categories) return [];
+
+        if (activeCategoryId === ALL_CATEGORY_ID) {
+          const all = indexData.categories.flatMap((cat) =>
+            (cat.images ?? []).map((img) => ({
+              categoryId: cat.id,
+              path: img.path,
+              thumbnailPath: img.thumbnailPath,
+              fileName: img.fileName,
+            }))
+          );
+          // Fisher-Yates shuffle — randomised on every plugin open
+          for (let i = all.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [all[i], all[j]] = [all[j], all[i]];
+          }
+          return all;
+        }
+
+        const cat = indexData.categories.find(
+          (c) => c.id === activeCategoryId
+        );
+        if (!cat?.images) return [];
+
         return cat.images.map((img) => ({
           categoryId: cat.id,
-          categoryName: cat.name || cat.id,
           path: img.path,
-          fileName: img.fileName || img.path,
+          thumbnailPath: img.thumbnailPath,
+          fileName: img.fileName,
         }));
       }
 
+      // ── Intersection Observer for lazy loading ────────────
+
       function ensureThumbObserver() {
-        if (thumbObserver || typeof IntersectionObserver === "undefined") {
-          return;
-        }
+        if (thumbObserver || typeof IntersectionObserver === "undefined") return;
 
         thumbObserver = new IntersectionObserver(
           (entries) => {
@@ -453,49 +548,75 @@
           },
           {
             root: gridScrollEl,
-            rootMargin: "200px 0px",
-            threshold: 0.1,
+            rootMargin: "300px 0px",
+            threshold: 0,
           }
         );
       }
 
+      // ── Grid render ───────────────────────────────────────
+
       function renderGrid() {
+        // Disconnect observer so we don't leak observations from previous render
+        if (thumbObserver) {
+          thumbObserver.disconnect();
+          thumbObserver = null;
+        }
+
         const items = getImagesForActiveCategory();
         gridEl.innerHTML = "";
 
-        if (!items || items.length === 0) {
-          emptyStateEl.style.display = "flex";
-          emptyStateEl.textContent = "No images for this category.";
-          gridEl.style.display = "none";
+        if (!items.length) {
+          showError("No images in this category.");
           return;
         }
 
-        emptyStateEl.style.display = "none";
+        hideShimmer();
         gridEl.style.display = "grid";
-
         ensureThumbObserver();
 
         items.forEach((img) => {
-          const url = IMAGE_BASE_URL + encodeURI(img.path);
+          // Full-res URL used for insert; thumbnail URL used for display
+          const fullUrl = IMAGE_BASE_URL + encodeURI(img.path);
+          const thumbUrl = img.thumbnailPath
+            ? IMAGE_BASE_URL + encodeURI(img.thumbnailPath)
+            : fullUrl; // fallback to full-res if thumbnails not yet generated
 
           const cell = document.createElement("div");
           cell.className = "thumb";
 
+          // Overlay for insert state feedback
+          const overlay = document.createElement("div");
+          overlay.className = "thumb-overlay";
+
+          const spinner = document.createElement("div");
+          spinner.className = "thumb-spinner";
+
+          const statusIcon = document.createElement("div");
+          statusIcon.className = "thumb-status";
+
+          overlay.appendChild(spinner);
+          overlay.appendChild(statusIcon);
+          cell.appendChild(overlay);
+
+          // Image element with lazy loading
           const imageEl = document.createElement("img");
           imageEl.loading = "lazy";
-          imageEl.alt = img.fileName;
-          imageEl.dataset.src = url;
+          imageEl.alt = img.fileName || "";
+          imageEl.dataset.src = thumbUrl;
 
           if (thumbObserver) {
             thumbObserver.observe(imageEl);
           } else {
-            imageEl.src = url;
+            imageEl.src = thumbUrl;
           }
 
           cell.appendChild(imageEl);
 
           cell.addEventListener("click", () => {
-            insertImage(url, img.fileName);
+            // Prevent double-click while another insert is in progress
+            if (activeTile) return;
+            insertImage(cell, fullUrl, statusIcon);
           });
 
           gridEl.appendChild(cell);
@@ -504,34 +625,48 @@
         gridScrollEl.scrollTop = 0;
       }
 
-      function insertImage(url, name) {
+      // ── Insert logic ──────────────────────────────────────
+
+      function insertImage(tile, url, statusIcon) {
+        activeTile = tile;
+        tile.classList.add("inserting");
+
         parent.postMessage(
-          {
-            pluginMessage: {
-              type: "insert-image",
-              url,
-            },
-          },
+          { pluginMessage: { type: "insert-image", url } },
           "*"
         );
       }
 
-      function preloadOtherCategories() {
-        if (!indexData || !Array.isArray(indexData.categories)) return;
-
-        indexData.categories.forEach((cat) => {
-          if (cat.id === activeCategoryId) return;
-          if (!Array.isArray(cat.images)) return;
-
-          cat.images.slice(0, PRELOAD_LIMIT_PER_CATEGORY).forEach((img) => {
-            const url = IMAGE_BASE_URL + encodeURI(img.path);
-            if (preloadedThumbs.has(url)) return;
-            preloadedThumbs.add(url);
-            const image = new Image();
-            image.src = url;
-          });
-        });
+      function clearTileState(tile) {
+        tile.classList.remove("inserting", "insert-success", "insert-error");
+        activeTile = null;
       }
+
+      // ── Messages from code.js ─────────────────────────────
+
+      window.onmessage = (event) => {
+        const msg = event.data?.pluginMessage;
+        if (!msg || !activeTile) return;
+
+        const tile = activeTile;
+        const statusIcon = tile.querySelector(".thumb-status");
+
+        if (msg.type === "insert-complete") {
+          tile.classList.remove("inserting");
+          tile.classList.add("insert-success");
+          if (statusIcon) statusIcon.textContent = "✓";
+          setTimeout(() => clearTileState(tile), 900);
+        }
+
+        if (msg.type === "insert-error") {
+          tile.classList.remove("inserting");
+          tile.classList.add("insert-error");
+          if (statusIcon) statusIcon.textContent = "✕";
+          setTimeout(() => clearTileState(tile), 1500);
+        }
+      };
+
+      // ── Menu open/close ───────────────────────────────────
 
       function openMenu() {
         filterMenu.style.display = "block";
@@ -543,28 +678,20 @@
         menuOpen = false;
       }
 
-      filterButton.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (menuOpen) {
-          closeMenu();
-        } else {
-          openMenu();
-        }
+      filterButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        menuOpen ? closeMenu() : openMenu();
       });
 
       document.addEventListener("click", () => {
-        if (menuOpen) {
-          closeMenu();
-        }
+        if (menuOpen) closeMenu();
       });
 
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && menuOpen) {
-          closeMenu();
-        }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && menuOpen) closeMenu();
       });
 
-      window.onmessage = () => {};
+      // ── Boot ──────────────────────────────────────────────
 
       fetchIndex();
     </script>
